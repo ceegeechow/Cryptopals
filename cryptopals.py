@@ -78,10 +78,19 @@ def repeating_key_xor(text, key):
 	for c in text:
 		h = str.format(hex(ord(c)))
 		k = str.format(hex(ord(key[key_index])))
-		ret += xor(h[2:], k[2:])
+		x = xor(h[2:], k[2:])
+		if len(x) == 1:
+			ret += "0"
+		ret += x
 		key_index += 1
 		key_index %= len(key)
 
 	return ret
 
 print(repeating_key_xor("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal", "ICE"))
+# c = "B"
+# key = "I"
+# h = str.format(hex(ord(c)))
+# k = str.format(hex(ord(key)))
+
+# print(h, k, xor(h[2:],k[2:]))
