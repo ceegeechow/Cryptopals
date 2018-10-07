@@ -19,19 +19,19 @@ def hex_2_64(hex):
 	return base64
 	#return hex.encode('base64','strict');
 
-print(hex_2_64("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"))
+# print(hex_2_64("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"))
 
 #challenge2:
 def xor(buf1, buf2):
 	out = str.format(hex(int(buf1, 16) ^ int(buf2, 16)))
 	return out[2:]
 
-print(xor("1c0111001f010100061a024b53535009181c", "686974207468652062756c6c277320657965"))
+# print(xor("1c0111001f010100061a024b53535009181c", "686974207468652062756c6c277320657965"))
 
 #challenge3:
 def decrypt_xor(C):
 	englishLetterFreq = {" ": 13, "E": 12.70, "T": 9.06, "A": 8.17, "O": 7.51, "I": 6.97, "N": 6.75, "S": 6.33, "H": 6.09, "R": 5.99, "D": 4.25, "L": 4.03, "C": 2.78, "U": 2.76, "M": 2.41, "W": 2.36, "F": 2.23, "G": 2.02, "Y": 1.97, "P": 1.93, "B": 1.29, "V": 0.98, "K": 0.77, "J": 0.15, "X": 0.15, "Q": 0.10, "Z": 0.07}
-	res = ""
+	ret = ""
 	max_score = 0
 	for i in range(0, 255):
 		h = str(hex(i))
@@ -49,8 +49,39 @@ def decrypt_xor(C):
 			if (ord(c) >= 65 and ord(c) <= 90) or (ord(c) >= 97 and ord(c) <= 122) or ord(c) == 32:
 				score += englishLetterFreq[c.upper()]
 		if score > max_score:
-			res = P
+			ret = P
 			max_score = score
-	return res
+	return ret, max_score
 
-print(decrypt_xor("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"))
+# print(decrypt_xor("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"))
+
+#challenge4:
+def detect_cipher(filename):
+	file = open(filename, "r+")
+	lines = file.readlines()
+	max_score = 0
+	ret = ""
+	for line in lines:
+		text, score = decrypt_xor(line)
+		if score > max_score:
+			ret = text
+			max_score = score
+	file.close()
+	return ret
+
+# print(detect_cipher("input.txt"))
+
+#challenge5:
+def repeating_key_xor(text, key):
+	ret = ""
+	key_index = 0
+	for c in text:
+		h = str.format(hex(ord(c)))
+		k = str.format(hex(ord(key[key_index])))
+		ret += xor(h[2:], k[2:])
+		key_index += 1
+		key_index %= len(key)
+
+	return ret
+
+print(repeating_key_xor("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal", "ICE"))
