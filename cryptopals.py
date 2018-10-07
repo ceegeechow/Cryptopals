@@ -1,3 +1,6 @@
+import base64
+from Crypto.Cipher import AES
+
 #challenge1:
 def hex_2_64(hex):
 	hex_2_bin = ["0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111", "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111"]
@@ -57,7 +60,7 @@ def decrypt_xor(C):
 
 #challenge4:
 def detect_cipher(filename):
-	file = open(filename, "r+")
+	file = open(filename)
 	lines = file.readlines()
 	max_score = 0
 	ret = ""
@@ -69,7 +72,7 @@ def detect_cipher(filename):
 	file.close()
 	return ret
 
-# print(detect_cipher("input.txt"))
+# print(detect_cipher("samput_4.txt"))
 
 #challenge5:
 def repeating_key_xor(text, key):
@@ -87,10 +90,42 @@ def repeating_key_xor(text, key):
 
 	return ret
 
-print(repeating_key_xor("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal", "ICE"))
-# c = "B"
-# key = "I"
-# h = str.format(hex(ord(c)))
-# k = str.format(hex(ord(key)))
+# print(repeating_key_xor("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal", "ICE"))
 
-# print(h, k, xor(h[2:],k[2:]))
+#challenge6:
+def hamming(str1, str2):
+	hamming = 0
+	for a, b in zip(str1, str2):
+		for b in bin(ord(a)^ord(b)):
+			if b == '1':
+				hamming += 1
+	return hamming
+
+#print(hamming("this is a test", "wokka wokka!!!")) #37
+
+def get_key(samp): 				#make better later
+	KEY_SIZE = 0
+	min_ham = -1
+	for key_size in range(2, 40):
+		h = hamming(samp[:key_size], samp[key_size:2*key_size])/key_size
+		if min_ham == -1 or h < min_ham:
+			KEY_SIZE = key_size
+			min_ham = h
+		print(key_size, h)
+	return KEY_SIZE
+
+def break_rkx(filename):
+	text = ""
+	for line in open(filename):
+		text += line.rstrip('\n')
+	key_size = get_key(text)
+	print("keysize: ", key_size)
+	# blocks = [text[i:i+key_size] for i in range(0, len(text), key_size)
+	# for i in range(len(text)/key_size):
+	# 	for j in range(key_size):
+	# 		blocks_t[j][i] = blocks[i][j]		#initialize blocks_t for memory efficiency??
+	# for block in blocks_t:
+	# 	decrypt_xor(block)
+
+
+break_rkx("input_6.txt")
