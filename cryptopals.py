@@ -107,7 +107,12 @@ def get_key(samp): 				#make better later
 	KEY_SIZE = 0
 	min_ham = -1
 	for key_size in range(2, 40):
-		h = hamming(samp[:key_size], samp[key_size:2*key_size])/key_size
+		h1 = hamming(samp[:key_size], samp[key_size:key_size*2])/key_size
+		h2 = hamming(samp[key_size*2:key_size*3], samp[key_size*3:key_size*4])/key_size
+		h3 = hamming(samp[key_size*4:key_size*5], samp[key_size*5:key_size*6])/key_size
+		h4 = hamming(samp[key_size*6:key_size*7], samp[key_size*7:key_size*8])/key_size
+		h5 = hamming(samp[key_size*8:key_size*9], samp[key_size*9:key_size*10])/key_size
+		h = (h1 + h2 + h3 + h4 + h5)/5
 		if min_ham == -1 or h < min_ham:
 			KEY_SIZE = key_size
 			min_ham = h
@@ -118,8 +123,8 @@ def break_rkx(filename):
 	text = ""
 	for line in open(filename):
 		text += line.rstrip('\n')
-	key_size = get_key(text)
-	print("keysize: ", key_size)
+	text = base64.b64decode(text).decode("utf-8") 
+	key_size = get_key(text[2:])
 	# blocks = [text[i:i+key_size] for i in range(0, len(text), key_size)
 	# for i in range(len(text)/key_size):
 	# 	for j in range(key_size):
