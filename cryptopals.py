@@ -2,7 +2,7 @@ import collections
 import base64
 from Crypto.Cipher import AES
 
-#challenge1:
+print("Challenge 1: Hex to Base64")
 def hex_2_64(hex):
 	hex_2_bin = ["0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111", "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111"]
 	dec_2_base64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
@@ -21,18 +21,19 @@ def hex_2_64(hex):
 		base64 += dec_2_base64[ind]
 
 	return base64
-	#return hex.encode('base64','strict');
 
-# print(hex_2_64("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"))
+print(hex_2_64("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"))
+#shoud return SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t
 
-#challenge2:
+print("Challenge 2: XOR")
 def xor(buf1, buf2):
 	out = str.format(hex(int(buf1, 16) ^ int(buf2, 16)))
 	return out[2:]
 
-# print(xor("1c0111001f010100061a024b53535009181c", "686974207468652062756c6c277320657965"))
+print(xor("1c0111001f010100061a024b53535009181c", "686974207468652062756c6c277320657965"))
+#should return 746865206b696420646f6e277420706c6179
 
-#challenge3:
+print("Challenge 3: Single Byte XOR Cipher")
 def decrypt_xor(C):
 	englishLetterFreq = {" ": 13, "E": 12.70, "T": 9.06, "A": 8.17, "O": 7.51, "I": 6.97, "N": 6.75, "S": 6.33, "H": 6.09, "R": 5.99, "D": 4.25, "L": 4.03, "C": 2.78, "U": 2.76, "M": 2.41, "W": 2.36, "F": 2.23, "G": 2.02, "Y": 1.97, "P": 1.93, "B": 1.29, "V": 0.98, "K": 0.77, "J": 0.15, "X": 0.15, "Q": 0.10, "Z": 0.07}
 	ret = ""
@@ -60,30 +61,27 @@ def decrypt_xor(C):
 
 	return ret, max_score, best_key
 
-# print(decrypt_xor("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"))
+print(decrypt_xor("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"))
 
-#challenge4:
+print("Challenge 4: Detect XOR Cipher")
 def detect_cipher(filename):
 	file = open(filename)
 	lines = file.readlines()
 	max_score = 0
 	ret = ""
 	for line in lines:
-		text, score = decrypt_xor(line)
+		text, score, _ = decrypt_xor(line)
 		if score > max_score:
 			ret = text
 			max_score = score
 	file.close()
 	return ret
 
-# print(detect_cipher("samput_4.txt"))
+print(detect_cipher("input_4.txt"))
 
-#challenge5:
+print("Challenge 5: Repeating Key XOR Cipher")
 def repeating_key_xor(text, key):
 	ret = ""
-	# text = ""
-	# for line in open(filename):
-	# 	text += line.rstrip('\n')
 	key_index = 0
 	for c in text:
 		h = str.format(hex(ord(c)))
@@ -94,12 +92,13 @@ def repeating_key_xor(text, key):
 		ret += x
 		key_index += 1
 		key_index %= len(key)
-
 	return ret
 
-# print(repeating_key_xor("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal", "ICE"))
+print(repeating_key_xor("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal", "ICE"))
+#should return 0b3637272a2b2e63622c2e69692a23693a2a3c6324202d623d63343c2a26226324272765272
+#a282b2f20430a652e2c652a3124333a653e2b2027630c692b20283165286326302e27282f
 
-#challenge6:
+print("Challenge 6: Break Repeating Key XOR Cipher")
 def hamming(str1, str2):
 	hamming = 0
 	for a, b in zip(str1, str2):
@@ -108,7 +107,7 @@ def hamming(str1, str2):
 				hamming += 1
 	return hamming
 
-#print(hamming("this is a test", "wokka wokka!!!")) #37
+print(hamming("this is a test", "wokka wokka!!!")) #shoud return 37
 
 def get_key(samp):
 	KEY_SIZE = 0
@@ -150,21 +149,20 @@ def break_rkx(filename):
 	key = ""
 	for block in blocks_t:
 		_, _, k = decrypt_xor(block.encode().hex())
-		key += k
-	
+		key += k	
 	return bytes.fromhex(key).decode()
 
-# key = break_rkx("input_6.txt")
-# print(key)
+key = break_rkx("input_6.txt")
+print(key)
 
-# text = ""
-# for line in open("input_6.txt"):
-# 	text += line.rstrip('\n')
-# text = base64.b64decode(text).decode('ASCII')
+text = ""
+for line in open("input_6.txt"):
+	text += line.rstrip('\n')
+text = base64.b64decode(text).decode('ASCII')
  
-# print(bytes.fromhex(repeating_key_xor(text, key)).decode())
+print(bytes.fromhex(repeating_key_xor(text, key)).decode())
 
-#challenge7:
+print("Challenge 7: AES in ECB mode")
 def breakAES(filename):
 	text = ""
 	for line in open(filename):
@@ -176,9 +174,9 @@ def breakAES(filename):
 	aes = AES.new(key, AES.MODE_ECB)
 	return aes.decrypt(text).decode()
 
-# print(breakAES("input_7.txt"))
+print(breakAES("input_7.txt"))
 
-#challenge8:
+print("Challenge 8: Detect AES in ECB mode")
 def detect_ECB(filename):
 	ECB_line = ""
 	max_freq = 0
@@ -191,7 +189,6 @@ def detect_ECB(filename):
 			if freq > max_freq:
 				ECB_line = line
 				max_freq = freq
-
 	return ECB_line
 
-# print(detect_ECB("input_8.txt"))
+print(detect_ECB("input_8.txt"))
