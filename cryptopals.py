@@ -4,30 +4,14 @@ from Crypto.Cipher import AES
 
 print("Challenge 1: Hex to Base64")
 def hex_2_64(hex):
-	hex_2_bin = ["0000", "0001", "0010", "0011", "0100", "0101", "0110", "0111", "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111"]
-	dec_2_base64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
-	bin_str = ""
-	for c in hex:
-		if ord(c) >= 48 and ord(c) <= 57:
-			index = ord(c) - 48
-		else:
-			c = c.upper()
-			index = ord(c) - 55;
-		bin_str += hex_2_bin[index]
-
-	base64 = ""
-	for i in range(0, len(bin_str), 6):
-		ind = int(bin_str[i:i+6],2)
-		base64 += dec_2_base64[ind]
-
-	return base64
+	return (base64.b64encode(bytes.fromhex(hex))).decode()
 
 print(hex_2_64("49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"))
 #shoud return SSdtIGtpbGxpbmcgeW91ciBicmFpbiBsaWtlIGEgcG9pc29ub3VzIG11c2hyb29t
 
 print("Challenge 2: XOR")
 def xor(buf1, buf2):
-	out = str.format(hex(int(buf1, 16) ^ int(buf2, 16)))
+	out = str(hex(int(buf1, 16) ^ int(buf2, 16)))
 	return out[2:]
 
 print(xor("1c0111001f010100061a024b53535009181c", "686974207468652062756c6c277320657965"))
@@ -84,8 +68,8 @@ def repeating_key_xor(text, key):
 	ret = ""
 	key_index = 0
 	for c in text:
-		h = str.format(hex(ord(c)))
-		k = str.format(hex(ord(key[key_index])))
+		h = str(hex(ord(c)))
+		k = str(hex(ord(key[key_index])))
 		x = xor(h[2:], k[2:])
 		if len(x) == 1:
 			ret += "0"
@@ -129,7 +113,7 @@ def break_rkx(filename):
 	text = ""
 	for line in open(filename):
 		text += line.rstrip('\n')
-	text = base64.b64decode(text).decode('ASCII')
+	text = base64.b64decode(text).decode()
 
 	key_size = get_key(text)
 
@@ -158,7 +142,7 @@ print(key)
 text = ""
 for line in open("input_6.txt"):
 	text += line.rstrip('\n')
-text = base64.b64decode(text).decode('ASCII')
+text = base64.b64decode(text).decode()
  
 print(bytes.fromhex(repeating_key_xor(text, key)).decode())
 
