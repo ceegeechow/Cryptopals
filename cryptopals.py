@@ -1,4 +1,4 @@
-import binascii
+import collections
 import base64
 from Crypto.Cipher import AES
 
@@ -97,7 +97,7 @@ def repeating_key_xor(text, key):
 
 	return ret
 
-# print(repeating_key_xor("input_5.txt", "ICE"))
+# print(repeating_key_xor("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal", "ICE"))
 
 #challenge6:
 def hamming(str1, str2):
@@ -110,7 +110,7 @@ def hamming(str1, str2):
 
 #print(hamming("this is a test", "wokka wokka!!!")) #37
 
-def get_key(samp): 				#make better later
+def get_key(samp):
 	KEY_SIZE = 0
 	min_ham = -1
 	for key_size in range(2, 40):
@@ -124,7 +124,6 @@ def get_key(samp): 				#make better later
 		if min_ham == -1 or h < min_ham:
 			KEY_SIZE = key_size
 			min_ham = h
-		# print(key_size, h)
 	return KEY_SIZE
 
 def break_rkx(filename):
@@ -134,7 +133,6 @@ def break_rkx(filename):
 	text = base64.b64decode(text).decode('ASCII')
 
 	key_size = get_key(text)
-	#key_size = 5
 
 	blocks = [""]*(len(text)//key_size+1)
 	index = 0
@@ -149,25 +147,51 @@ def break_rkx(filename):
 		for j in range(key_size):
 			blocks_t[j] += (blocks[i])[j]
 	
-
-	# #print(blocks_t)
 	key = ""
 	for block in blocks_t:
-		#print("block: ", block)
-		#print(str(binascii.hexlify(b'<block>')))
-		#print(block)
 		_, _, k = decrypt_xor(block.encode().hex())
-		#print(bytes.fromhex(k))
 		key += k
 	
 	return bytes.fromhex(key).decode()
 
-key = break_rkx("input_6.txt")
-print(key)
+# key = break_rkx("input_6.txt")
+# print(key)
 
-text = ""
-for line in open("input_6.txt"):
-	text += line.rstrip('\n')
-text = base64.b64decode(text).decode('ASCII')
+# text = ""
+# for line in open("input_6.txt"):
+# 	text += line.rstrip('\n')
+# text = base64.b64decode(text).decode('ASCII')
  
-print(bytes.fromhex(repeating_key_xor(text, key)).decode())
+# print(bytes.fromhex(repeating_key_xor(text, key)).decode())
+
+#challenge7:
+def breakAES(filename):
+	text = ""
+	for line in open(filename):
+		text += line.rstrip('\n')
+
+	text = base64.b64decode(text)
+	key = "YELLOW SUBMARINE"
+
+	aes = AES.new(key, AES.MODE_ECB)
+	return aes.decrypt(text).decode()
+
+# print(breakAES("input_7.txt"))
+
+#challenge8:
+def detect_ECB(filename):
+	ECB_line = ""
+	max_freq = 0
+	for line in open(filename):
+		chunks = [line[i:i+32] for i in range(0, len(line), 32)] #16???
+		d = collections.defaultdict(int)
+		for chunk in chunks:
+			d[chunk] += 1
+			freq = max(d.values())
+			if freq > max_freq:
+				ECB_line = line
+				max_freq = freq
+
+	return ECB_line
+
+# print(detect_ECB("input_8.txt"))
