@@ -1,3 +1,4 @@
+import binascii
 import base64
 from Crypto.Cipher import AES
 
@@ -36,6 +37,7 @@ def decrypt_xor(C):
 	englishLetterFreq = {" ": 13, "E": 12.70, "T": 9.06, "A": 8.17, "O": 7.51, "I": 6.97, "N": 6.75, "S": 6.33, "H": 6.09, "R": 5.99, "D": 4.25, "L": 4.03, "C": 2.78, "U": 2.76, "M": 2.41, "W": 2.36, "F": 2.23, "G": 2.02, "Y": 1.97, "P": 1.93, "B": 1.29, "V": 0.98, "K": 0.77, "J": 0.15, "X": 0.15, "Q": 0.10, "Z": 0.07}
 	ret = ""
 	max_score = 0
+	best_key = ""
 	for i in range(0, 255):
 		h = str(hex(i))
 		if i < 16:
@@ -54,7 +56,9 @@ def decrypt_xor(C):
 		if score > max_score:
 			ret = P
 			max_score = score
-	return ret, max_score
+			best_key = k
+
+	return ret, max_score, best_key
 
 # print(decrypt_xor("1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736"))
 
@@ -77,6 +81,9 @@ def detect_cipher(filename):
 #challenge5:
 def repeating_key_xor(text, key):
 	ret = ""
+	# text = ""
+	# for line in open(filename):
+	# 	text += line.rstrip('\n')
 	key_index = 0
 	for c in text:
 		h = str.format(hex(ord(c)))
@@ -90,7 +97,7 @@ def repeating_key_xor(text, key):
 
 	return ret
 
-# print(repeating_key_xor("Burning 'em, if you ain't quick and nimble\nI go crazy when I hear a cymbal", "ICE"))
+# print(repeating_key_xor("input_5.txt", "ICE"))
 
 #challenge6:
 def hamming(str1, str2):
@@ -112,25 +119,55 @@ def get_key(samp): 				#make better later
 		h3 = hamming(samp[key_size*4:key_size*5], samp[key_size*5:key_size*6])/key_size
 		h4 = hamming(samp[key_size*6:key_size*7], samp[key_size*7:key_size*8])/key_size
 		h5 = hamming(samp[key_size*8:key_size*9], samp[key_size*9:key_size*10])/key_size
-		h = (h1 + h2 + h3 + h4 + h5)/5
+		h6 = hamming(samp[key_size*10:key_size*11], samp[key_size*11:key_size*12])/key_size
+		h = (h1 + h2 + h3 + h4 + h5 + h6)/6
 		if min_ham == -1 or h < min_ham:
 			KEY_SIZE = key_size
 			min_ham = h
-		print(key_size, h)
+		# print(key_size, h)
 	return KEY_SIZE
 
 def break_rkx(filename):
 	text = ""
 	for line in open(filename):
 		text += line.rstrip('\n')
-	text = base64.b64decode(text).decode("utf-8") 
-	key_size = get_key(text[2:])
-	# blocks = [text[i:i+key_size] for i in range(0, len(text), key_size)
-	# for i in range(len(text)/key_size):
-	# 	for j in range(key_size):
-	# 		blocks_t[j][i] = blocks[i][j]		#initialize blocks_t for memory efficiency??
-	# for block in blocks_t:
-	# 	decrypt_xor(block)
+	text = base64.b64decode(text).decode('ASCII')
 
+	key_size = get_key(text)
+	#key_size = 5
 
-break_rkx("input_6.txt")
+	blocks = [""]*(len(text)//key_size+1)
+	index = 0
+
+	for i in range(0, len(text), key_size):
+		blocks[index] = text[i:i+key_size]
+		index += 1
+
+	blocks_t = [""]*key_size
+
+	for i in range(len(text)//key_size):
+		for j in range(key_size):
+			blocks_t[j] += (blocks[i])[j]
+	
+
+	# #print(blocks_t)
+	key = ""
+	for block in blocks_t:
+		#print("block: ", block)
+		#print(str(binascii.hexlify(b'<block>')))
+		#print(block)
+		_, _, k = decrypt_xor(block.encode().hex())
+		#print(bytes.fromhex(k))
+		key += k
+	
+	return bytes.fromhex(key).decode()
+
+key = break_rkx("input_6.txt")
+print(key)
+
+text = ""
+for line in open("input_6.txt"):
+	text += line.rstrip('\n')
+text = base64.b64decode(text).decode('ASCII')
+ 
+print(bytes.fromhex(repeating_key_xor(text, key)).decode())
